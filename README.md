@@ -22,6 +22,10 @@ The glob package is a simple package for doing simple pattern matching using wil
     or string (if a string, a new GlobPattern will be compiled as needed),
     matches the given string str. May return an error.
 
+    This is a general purpose function that can be used if you don't plan to
+    reuse a pattern many times or can't guarantee you'll always use the same
+    pattern.
+
 
 ## License
 
