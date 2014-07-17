@@ -253,7 +253,9 @@ func compileGlobPattern(pattern string) ([]*globScanner, error) {
 		numWildcards := len(wildcards)
 		if numWildcards > 0 {
 			last := wildcards[numWildcards-1]
-			if code == '\\' && len(last.substr) == 0 {
+			if (kind == globOne || kind == globMany) && last.kind == globMany && last.start == index {
+				return nil, errors.New("* or ? cannot immediately follow *")
+			} else if code == '\\' && len(last.substr) == 0 {
 				last.start += utf8.RuneLen(code)
 				continue
 			} else {
