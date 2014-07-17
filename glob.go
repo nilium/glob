@@ -60,8 +60,10 @@ func (k globKind) String() string {
 // character. Avoid escaping characters where possible, as this introduces
 // additional complexity into the pattern.
 func NewPattern(pattern string) (*GlobPattern, error) {
-	steps := compileGlobPattern(pattern)
-	if steps == nil {
+	steps, err := compileGlobPattern(pattern)
+	if err != nil {
+		return nil, err
+	} else if steps == nil {
 		return nil, errors.New("Unable to compile glob pattern")
 	} else if len(steps) == 0 {
 		return nil, errors.New("Compiled glob pattern was empty")
@@ -223,7 +225,7 @@ func consumeEnd(str, substr string) (bool, string, int) {
 //
 // Any character in the pattern string can be escaped using a backslash to
 // produce the literal character following it rather than a special character.
-func compileGlobPattern(pattern string) []*globScanner {
+func compileGlobPattern(pattern string) ([]*globScanner, error) {
 	// compile scanner function array
 	wildcards := make([]*globScanner, 0, 4)
 	for index, code := range pattern {
@@ -274,5 +276,5 @@ func compileGlobPattern(pattern string) []*globScanner {
 
 	wildcards = append(wildcards, &globScanner{consumeEnd, globEnd, "", len(pattern)})
 
-	return wildcards
+	return wildcards, nil
 }
