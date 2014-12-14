@@ -32,9 +32,9 @@ type globKind int
 
 const (
 	globMany   globKind = iota
-	globOne    globKind = iota
-	globString globKind = iota
-	globEnd    globKind = iota
+	globOne             = iota
+	globString          = iota
+	globEnd             = iota
 )
 
 func (k globKind) String() string {
