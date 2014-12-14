@@ -37,6 +37,21 @@ const (
 	globEnd             = iota
 )
 
+// ErrInvalidPatternType is returned by Matches if the given pattern type was
+// neither a string nor a *GlobPattern.
+var ErrInvalidPatternType = errors.New("Invalid pattern type -- must be string or GlobPattern")
+
+// ErrPatternInvalid is returned by NewPattern  if pattern compilation failed
+// without an error.
+var ErrPatternInvalid = errors.New("Unable to compile glob pattern")
+
+// ErrPatternEmpty is returned by NewPattern if the resulting pattern is empty.
+var ErrPatternEmpty = errors.New("Compiled glob pattern was empty")
+
+// ErrInvalidGlobSequence is returned by NewPattern if the glob pattern
+// contained any wildcard following an asterisk.
+var ErrInvalidGlobSequence = errors.New("* or ? cannot immediately follow *")
+
 func (k globKind) String() string {
 	switch k {
 	case globMany:
@@ -64,9 +79,9 @@ func NewPattern(pattern string) (*GlobPattern, error) {
 	if err != nil {
 		return nil, err
 	} else if steps == nil {
-		return nil, errors.New("Unable to compile glob pattern")
+		return nil, ErrPatternInvalid
 	} else if len(steps) == 0 {
-		return nil, errors.New("Compiled glob pattern was empty")
+		return nil, ErrPatternEmpty
 	}
 	return &GlobPattern{pattern, steps}, nil
 }
@@ -131,19 +146,29 @@ type globScanner struct {
 // error. Otherwise, if the pattern is valid, it will return true or false
 // depending on whether it matches str and a nil error.
 //
-// pattern may be either a GlobPattern or a string. If it's a string, it will
+// pattern may be either a *GlobPattern or a string. If it's a string, it will
 // be parsed and compiled on demand. Any other type is an error.
-func Matches(pattern interface{}, str string) (bool, error) {
-	if ps, ok := pattern.(string); ok {
-		p, err := NewPattern(ps)
+//
+// If the pattern is neither a string nor a *GlobPattern, ErrInvalidPatternType
+// will be the returned error.
+//
+// If pattern is a string and an error is returned, it is any error that may
+// be returned by NewPattern.
+func Matches(pattern interface{}, str string) (matched bool, err error) {
+	switch p := pattern.(type) {
+	case string:
+		var compiled *GlobPattern
+		compiled, err = NewPattern(p)
 		if err != nil {
-			return false, err
+			return
 		}
-		return p.Matches(str), nil
-	} else if p, ok := pattern.(GlobPattern); ok {
-		return p.Matches(str), nil
+		matched = compiled.Matches(str)
+	case *GlobPattern:
+		matched = p.Matches(str)
+	default:
+		err = ErrInvalidPatternType
 	}
-	return false, errors.New("Invalid pattern type -- must be string or GlobPattern")
+	return
 }
 
 // consumeAllPreceding consumes one or more characters in a string up to the
@@ -254,7 +279,7 @@ func compileGlobPattern(pattern string) ([]globScanner, error) {
 		if numWildcards > 0 {
 			last := wildcards[numWildcards-1]
 			if (kind == globOne || kind == globMany) && last.kind == globMany && last.start == index {
-				return nil, errors.New("* or ? cannot immediately follow *")
+				return nil, ErrInvalidGlobSequence
 			} else if code == '\\' && len(last.substr) == 0 {
 				last.start += utf8.RuneLen(code)
 				continue
