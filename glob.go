@@ -52,13 +52,13 @@ func (k globKind) String() string {
 	}
 }
 
-// Creates a new GlobPattern based on pattern and returns it. Patterns consist
-// of varying sequences of chars interspersed with wildcards -- either `*` or
-// `?` to match 1 or more characters or a single character, respectively. Any
-// character may be escaped with a backslash (\) to produce the same literal
-// character in the string. Escaping any other character will yield the escaped
-// character. Avoid escaping characters where possible, as this introduces
-// additional complexity into the pattern.
+// NewPattern allocates a new GlobPattern based on pattern and returns it.
+// Patterns consist of varying sequences of chars interspersed with
+// wildcards -- either `*` or `?` to match 1 or more characters or a single
+// character, respectively. Any character may be escaped with a backslash (\)
+// to produce the same literal character in the string. Escaping any other
+// character will yield the escaped character. Avoid escaping characters where
+// possible, as this introduces additional complexity into the pattern.
 func NewPattern(pattern string) (*GlobPattern, error) {
 	steps, err := compileGlobPattern(pattern)
 	if err != nil {
