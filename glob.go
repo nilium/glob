@@ -112,7 +112,7 @@ func (p *GlobPattern) Matches(str string) bool {
 		}
 
 		matches, substr, bytesConsumed = test.scanner(substr, test.substr)
-		if firstMany == stepIndex && matches {
+		if matches && firstMany == stepIndex {
 			firstManySubstr = firstManySubstr[bytesConsumed-len(test.substr):]
 		}
 
