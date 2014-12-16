@@ -1,35 +1,79 @@
-# glob
+glob
+====
+Noel Cower
+v1.0, 2014-12-15
 
-The glob package is a simple package for doing simple pattern matching using
-wildcards. It exports three functions and one type:
-
-- `type glob.GlobPattern`
-  
-    A compiled glob pattern.
-
-    - `func (p *GlobPattern) Matches(str string) bool`
-
-        Returns whether the pattern matches the string str. Does not return an
-        error.
-
-- `func glob.NewPattern(pattern string) *GlobPattern, err`
-
-    Attempts to compile the pattern string into a GlobPattern. If successful,
-    return the GlobPattern and nil, otherwise returns nil and an error.
-
-- `func glob.Matches(pattern any, str string) bool, err`
-
-    Returns whether or not the given pattern, which may be a `*GlobPattern`
-    or string (if a string, a new GlobPattern will be compiled as needed),
-    matches the given string str. May return an error.
-
-    This is a general purpose function that can be used if you don't plan to
-    reuse a pattern many times or can't guarantee you'll always use the same
-    pattern.
+The 'glob' package is a simple package for doing shell glob-like pattern
+matching against strings using wildcards.
 
 
-## License
+
+Reference
+---------
+
+The following is a rudimentary intro the package's API. For more thorough
+documentation, use godoc.
+
+func Matches
+~~~~~~~~~~~~
+
+[source,go]
+func Matches(pattern interface{}, str string) (bool, error)
+
+Returns whether or not the given pattern, which may be a GlobPattern
+or string (if a string, a new GlobPattern will be compiled as needed),
+matches the given string str. May return an error.
+
+This is a general purpose function that can be used if you don't plan to
+reuse a pattern many times or can't guarantee you'll always use the same
+pattern.
+
+
+
+type GlobPattern
+~~~~~~~~~~~~~~~~
+
+[source,go]
+----
+type GlobPattern struct {
+    // contains filtered or unexported fields
+}
+----
+
+GlobPattern is a compiled, reusable glob pattern. Unlike when using Matches
+above, GlobPattern's 'Matches' method does not result in on-the-fly compilation
+of a GlobPattern for ever use.
+
+
+func NewPattern
+^^^^^^^^^^^^^^^
+
+[source,go]
+func NewPattern(pattern string) (*GlobPattern, error)
+
+Attempts to compile the pattern string into a GlobPattern. If successful,
+return the GlobPattern and nil, otherwise returns nil and an error.
+
+
+func (*GlobPattern) Matches
+^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+[source,go]
+func (p *GlobPattern) Matches(str string) bool
+
+Returns whether the pattern 'p' matches the string 'str'. Does not return an
+error.
+
+
+
+License
+-------
 
 The glob package is distributed under the Boost Software License, Version 1.0.
-See accompanying file LICENSE_1_0.txt or copy at
+See accompanying file link:LICENSE_1_0.txt[] or copy at
 <http://www.boost.org/LICENSE_1_0.txt>.
+
+[sidebar]
+--
+include::./LICENSE_1_0.txt[]
+--
