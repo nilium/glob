@@ -94,8 +94,8 @@ func (p *GlobPattern) String() string {
 // Matches returns whether the glob pattern p matches str.
 func (p *GlobPattern) Matches(str string) bool {
 	steps := p.steps
-	var numSteps = len(steps)
-	var stepIndex = 0
+	var numSteps int = len(steps)
+	var stepIndex int = 0
 	var substr = str
 	var matches bool = false
 	var bytesConsumed int = 0
