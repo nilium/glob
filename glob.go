@@ -19,7 +19,7 @@ import (
 // GlobPattern is a compiled glob pattern.
 type GlobPattern struct {
 	pattern string
-	steps   []globScanner
+	steps   []*globScanner
 }
 
 // scanFunc implementations attempt to match something followed by a given
@@ -250,9 +250,9 @@ func consumeEnd(str, substr string) (bool, string, int) {
 //
 // Any character in the pattern string can be escaped using a backslash to
 // produce the literal character following it rather than a special character.
-func compileGlobPattern(pattern string) ([]globScanner, error) {
+func compileGlobPattern(pattern string) ([]*globScanner, error) {
 	// compile scanner function array
-	wildcards := make([]globScanner, 0, 4)
+	wildcards := make([]*globScanner, 0, 4)
 	for index, code := range pattern {
 		var fn scanFunc = nil
 		var start int = -1
@@ -292,7 +292,7 @@ func compileGlobPattern(pattern string) ([]globScanner, error) {
 			start = index + utf8.RuneLen(code)
 		}
 
-		wildcards = append(wildcards, globScanner{fn, kind, "", start})
+		wildcards = append(wildcards, &globScanner{fn, kind, "", start})
 	}
 
 	numWildcards := len(wildcards)
@@ -301,7 +301,7 @@ func compileGlobPattern(pattern string) ([]globScanner, error) {
 		last.substr = pattern[last.start:]
 	}
 
-	wildcards = append(wildcards, globScanner{consumeEnd, globEnd, "", len(pattern)})
+	wildcards = append(wildcards, &globScanner{consumeEnd, globEnd, "", len(pattern)})
 
 	return wildcards, nil
 }
