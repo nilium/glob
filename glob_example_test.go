@@ -31,7 +31,7 @@ func ExampleMatches() {
 	var err error
 
 	// Match
-	m, err = Matches("foo/bar/*/baz", "foo/bar/qux/baz")
+	m, err = Matches(PatternStr("foo/bar/*/baz"), "foo/bar/qux/baz")
 
 	switch {
 	case err != nil:
@@ -41,7 +41,7 @@ func ExampleMatches() {
 	}
 
 	// No match
-	m, err = Matches("foo/bar/*/baz?", "foo/bar/qux/baz")
+	m, err = Matches(PatternStr("foo/bar/*/baz?"), "foo/bar/qux/baz")
 
 	switch {
 	case err != nil:

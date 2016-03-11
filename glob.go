@@ -22,6 +22,8 @@ type GlobPattern struct {
 	steps   []*globScanner
 }
 
+func (g *GlobPattern) compiled() (*GlobPattern, error) { return g, nil }
+
 // scanFunc implementations attempt to match something followed by a given
 // substring that may be empty. If the match is successful, they return true,
 // a slice of the input string sans the matched bytes, and the number of bytes
@@ -66,6 +68,20 @@ func (k globKind) String() string {
 		return "unknown"
 	}
 }
+
+// Pattern is the common interface implemented by patterns under the glob
+// package. Only PatternStr and GlobPattern implement this, which allows them
+// to be recognized as patterns by Matches(). When in doubt, using the concrete
+// GlobPattern is recommended.
+type Pattern interface {
+	compiled() (*GlobPattern, error)
+}
+
+// PatternStr is a convenience type for passing strings as patterns to the
+// Matches function. The PatternStr is compiled on demand.
+type PatternStr string
+
+func (p PatternStr) compiled() (*GlobPattern, error) { return NewPattern(string(p)) }
 
 // NewPattern allocates a new GlobPattern based on pattern and returns it.
 // Patterns consist of varying sequences of chars interspersed with
@@ -146,29 +162,23 @@ type globScanner struct {
 // error. Otherwise, if the pattern is valid, it will return true or false
 // depending on whether it matches str and a nil error.
 //
-// pattern may be either a *GlobPattern or a string. If it's a string, it will
-// be parsed and compiled on demand. Any other type is an error.
+// pattern may be either a *GlobPattern or a PatternStr. If it's a string, it
+// will be parsed and compiled on demand.
 //
 // If the pattern is neither a string nor a *GlobPattern, ErrInvalidPatternType
 // will be the returned error.
 //
 // If pattern is a string and an error is returned, it is any error that may
 // be returned by NewPattern.
-func Matches(pattern interface{}, str string) (matched bool, err error) {
-	switch p := pattern.(type) {
-	case string:
-		var compiled *GlobPattern
-		compiled, err = NewPattern(p)
-		if err != nil {
-			return
-		}
-		matched = compiled.Matches(str)
-	case *GlobPattern:
-		matched = p.Matches(str)
-	default:
-		err = ErrInvalidPatternType
+func Matches(pattern Pattern, str string) (matched bool, err error) {
+	var compiled *GlobPattern
+
+	compiled, err = pattern.compiled()
+	if err != nil {
+		return false, err
 	}
-	return
+
+	return compiled.Matches(str), nil
 }
 
 // consumeAllPreceding consumes one or more characters in a string up to the
