@@ -181,13 +181,13 @@ func Matches(pattern Pattern, str string) (matched bool, err error) {
 	return compiled.Matches(str), nil
 }
 
-// consumeAllPreceding consumes one or more characters in a string up to the
+// consumeAllPreceding consumes zero or more characters in a string up to the
 // given substring. If it successfully finds substr in the string, it returns a
 // slice of str starting after the found substring. substr may be empty.
 // On failure, returns false, str, and 0.
 func consumeAllPreceding(str, substr string) (bool, string, int) {
 	if len(str) == 0 {
-		return false, str, 0
+		return len(substr) == 0, str, 0
 	} else if len(substr) == 0 {
 		return true, str[len(str):], len(str)
 	}
