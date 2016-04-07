@@ -45,18 +45,18 @@ const (
 
 // ErrInvalidPatternType is returned by Matches if the given pattern type was
 // neither a string nor a *GlobPattern.
-var ErrInvalidPatternType = errors.New("Invalid pattern type -- must be string or GlobPattern")
+var ErrInvalidPatternType = errors.New("invalid pattern type")
 
-// ErrPatternInvalid is returned by NewPattern  if pattern compilation failed
+// ErrPatternInvalid is returned by NewPattern if pattern compilation failed
 // without an error.
-var ErrPatternInvalid = errors.New("Unable to compile glob pattern")
+var ErrPatternInvalid = errors.New("unable to compile glob pattern")
 
 // ErrPatternEmpty is returned by NewPattern if the resulting pattern is empty.
-var ErrPatternEmpty = errors.New("Compiled glob pattern was empty")
+var ErrPatternEmpty = errors.New("compiled glob pattern is empty")
 
 // ErrInvalidGlobSequence is returned by NewPattern if the glob pattern
 // contained any wildcard following an asterisk.
-var ErrInvalidGlobSequence = errors.New("* or ? cannot immediately follow *")
+var ErrInvalidGlobSequence = errors.New("* or ? may not follow *")
 
 func (k globKind) String() string {
 	switch k {
