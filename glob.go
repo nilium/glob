@@ -22,7 +22,11 @@ type GlobPattern struct {
 	steps   []*globScanner
 }
 
-func (g *GlobPattern) compiled() (*GlobPattern, error) { return g, nil }
+type matcher interface {
+	Matches(string) bool
+}
+
+func (g *GlobPattern) compiled() (matcher, error) { return g, nil }
 
 // scanFunc implementations attempt to match something followed by a given
 // substring that may be empty. If the match is successful, they return true,
@@ -74,14 +78,21 @@ func (k globKind) String() string {
 // to be recognized as patterns by Matches(). When in doubt, using the concrete
 // GlobPattern is recommended.
 type Pattern interface {
-	compiled() (*GlobPattern, error)
+	compiled() (matcher, error)
 }
+
+// Literal is a literal string that must match its input string.
+type Literal string
+
+func (l Literal) compiled() (matcher, error) { return l, nil }
+
+func (l Literal) Matches(s string) bool { return string(l) == s }
 
 // PatternStr is a convenience type for passing strings as patterns to the
 // Matches function. The PatternStr is compiled on demand.
 type PatternStr string
 
-func (p PatternStr) compiled() (*GlobPattern, error) { return NewPattern(string(p)) }
+func (p PatternStr) compiled() (matcher, error) { return NewPattern(string(p)) }
 
 // NewPattern allocates a new GlobPattern based on pattern and returns it.
 // Patterns consist of varying sequences of chars interspersed with
@@ -171,7 +182,7 @@ type globScanner struct {
 // If pattern is a string and an error is returned, it is any error that may
 // be returned by NewPattern.
 func Matches(pattern Pattern, str string) (matched bool, err error) {
-	var compiled *GlobPattern
+	var compiled matcher
 
 	compiled, err = pattern.compiled()
 	if err != nil {
